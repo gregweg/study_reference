@@ -15,7 +15,30 @@ def find_second_largest(root_node):
 
     return parent.value
 
+# Slightly more efficient solution
+def find_largest(root_node, parent=None):
+    current = root_node
+    while current:
+        if not current.right:
+            return current.value
+        current = current.right
+    
+def find_second_largest(root_node):
 
+    if (root_node is None or (root_node.left is None and root_node.right is None)):
+        raise ValueError('Tree must have at least 2 nodes')
+    
+    current = root_node
+    while current:
+        
+        if current.left and not current.right:
+            return find_largest(current.left)
+        
+        if (current.right and
+                not current.right.left and
+                not current.right.right):
+            return current.value
+        current = current.right
 # Tests
 
 class Test(unittest.TestCase):
