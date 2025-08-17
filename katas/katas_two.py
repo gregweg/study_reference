@@ -86,3 +86,66 @@ class RomanNumerals:
                 result += num
                 index += len(symbol)
         return result
+    
+def hamming(n):
+    if n <= 0:
+        raise ValueError("n must be positive")
+
+    h = [1] * n  # h[0] = 1 is the first Hamming number
+    i2 = i3 = i5 = 0  # pointers to the next factors 2, 3, 5
+
+    for t in range(1, n):
+        next2, next3, next5 = 2 * h[i2], 3 * h[i3], 5 * h[i5]
+        x = min(next2, next3, next5)
+        h[t] = x
+        if x == next2: i2 += 1
+        if x == next3: i3 += 1
+        if x == next5: i5 += 1
+
+    return h[-1]
+
+import re
+
+def decode_bits(bits):
+    bits = bits.strip('0')
+    if not bits:
+        return ''
+    runs = re.findall(r'(1+|0+)', bits)
+    min_unit = min(len(run) for run in runs)
+    
+    normalized = ''.join(
+        ('1' * (len(run)//min_unit) if run[0] == '1' else '0' * (len(run)//min_unit))
+        for run in runs
+    )
+    
+    morse = normalized
+    morse = morse.replace('000000', '   ')
+    morse = morse.replace('000', ' ')
+    morse = morse.replace('111', '-')
+    morse = morse.replace('1', '.')
+    morse = morse.replace('0', '')
+    return morse
+    
+
+def decode_morse(morseCode):
+    words = morseCode.strip().split('   ')
+    decoded_words = []
+    for word in words:
+        letters = [MORSE_CODE.get(symbol, '') for symbol in word.split()]
+        decoded_words.append(''.join(letters))
+    return ' '.join(decoded_words)
+
+MORSE_CODE = {
+    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D',
+    '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H',
+    '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
+    '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P',
+    '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
+    '-.--': 'Y', '--..': 'Z',
+    '-----': '0', '.----': '1', '..---': '2', '...--': '3',
+    '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+    '---..': '8', '----.': '9',
+    '.-.-.-': '.', '--..--': ',', '..--..': '?', '-.-.--': '!',
+    '-....-': '-', '-..-.': '/', '.--.-.': '@', '-.--.': '(', '-.--.-': ')'
+}
