@@ -1,6 +1,21 @@
 
 from copy import deepcopy
 
+MORSE_CODE = {
+    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D',
+    '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H',
+    '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
+    '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P',
+    '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
+    '-.--': 'Y', '--..': 'Z',
+    '-----': '0', '.----': '1', '..---': '2', '...--': '3',
+    '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+    '---..': '8', '----.': '9',
+    '.-.-.-': '.', '--..--': ',', '..--..': '?', '-.-.--': '!',
+    '-....-': '-', '-..-.': '/', '.--.-.': '@', '-.--.': '(', '-.--.-': ')'
+}
+
 def pad_board(board):
     if not board or not board[0]:
         return [[0,0],[0,0]]  # tiny empty pad
@@ -101,7 +116,6 @@ def hamming(n):
         if x == next2: i2 += 1
         if x == next3: i3 += 1
         if x == next5: i5 += 1
-
     return h[-1]
 
 import re
@@ -117,7 +131,6 @@ def decode_bits(bits):
         ('1' * (len(run)//min_unit) if run[0] == '1' else '0' * (len(run)//min_unit))
         for run in runs
     )
-    
     morse = normalized
     morse = morse.replace('000000', '   ')
     morse = morse.replace('000', ' ')
@@ -125,7 +138,6 @@ def decode_bits(bits):
     morse = morse.replace('1', '.')
     morse = morse.replace('0', '')
     return morse
-    
 
 def decode_morse(morseCode):
     words = morseCode.strip().split('   ')
@@ -135,17 +147,16 @@ def decode_morse(morseCode):
         decoded_words.append(''.join(letters))
     return ' '.join(decoded_words)
 
-MORSE_CODE = {
-    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D',
-    '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H',
-    '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
-    '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P',
-    '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
-    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
-    '-.--': 'Y', '--..': 'Z',
-    '-----': '0', '.----': '1', '..---': '2', '...--': '3',
-    '....-': '4', '.....': '5', '-....': '6', '--...': '7',
-    '---..': '8', '----.': '9',
-    '.-.-.-': '.', '--..--': ',', '..--..': '?', '-.-.--': '!',
-    '-....-': '-', '-..-.': '/', '.--.-.': '@', '-.--.': '(', '-.--.-': ')'
-}
+def is_incrementing(number): return str(number) in '1234567890'
+def is_decrementing(number): return str(number) in '9876543210'
+def is_palindrome(number):   return str(number) == str(number)[::-1]
+def is_round(number):        return set(str(number)[1:]) == set('0')
+
+def is_interesting(number, awesome_phrases):
+    tests = (is_round, is_incrementing, is_decrementing,
+             is_palindrome, awesome_phrases.__contains__)
+       
+    for num, color in zip(range(number, number+3), (2, 1, 1)):
+        if num >= 100 and any(test(num) for test in tests):
+            return color
+    return 0
