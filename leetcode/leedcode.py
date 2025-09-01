@@ -1,6 +1,11 @@
+from bisect import bisect_left
+from collections import defaultdict, deque
+from typing import List, Counter
+import heapq
+
+
 def firstMissingPositive(self, nums: List[int]) -> int:
     n = len(nums)
-
     i = 0
     while i < n:
         x = nums[i]
@@ -66,7 +71,9 @@ def permuteUnique(self, nums: List[int]) -> List[List[int]]:
     return result
 
 
-def rotate_matrix(self, matrix: List[List[int]]) -> None: # Do not return anything, modify matrix in-place instead.
+def rotate_matrix(
+    self, matrix: List[List[int]]
+) -> None:  # Do not return anything, modify matrix in-place instead.
     n = len(matrix)
 
     # Step 1: Transpose the matrix (swap matrix[i][j] with matrix[j][i])
@@ -97,6 +104,142 @@ def jump(self, nums: List[int]) -> int:
     return jumps
 
 
+def maxSubArray(self, nums: List[int]) -> int:
+    best = cur = nums[0]
+    for x in nums[1:]:
+        cur = max(x, cur + x)  # extend or start fresh
+        best = max(best, cur)
+    return best
+
+
+def findLongestWord(self, s: str, dictionary: List[str]) -> str:
+    def is_subseq(word, s):
+        i = 0
+        for ch in s:
+            if i < len(word) and word[i] == ch:
+                i += 1
+        return i == len(word)
+
+    dictionary.sort(key=lambda w: (-len(w), w))
+    for w in dictionary:
+        if is_subseq(w, s):
+            return w
+    return ""
+
+
+def findErrorNums(self, nums: List[int]) -> List[int]:
+    seen = set()
+    dup = -1
+    for x in nums:
+        if x in seen:
+            dup = x
+        else:
+            seen.add(x)
+    n = len(nums)
+    total = n * (n + 1) // 2
+    missing = total - (sum(nums) - dup)
+    return [dup, missing]
+
+
+def joinOverlappingTuples(self, pairs: List[List[int]]) -> int:
+    sorted_pairs = sorted(pairs)
+    merged = []
+    for p in sorted_pairs:
+        if not merged or merged[-1][1] < p[0]:
+            merged.append(p)
+        else:
+            merged[-1][1] = max(merged[-1][1], p[1])
+    return len(merged)
+
+
+def replaceWords(self, dictionary: List[str], sentence: str) -> str:
+    roots = set(dictionary)
+
+    def shortest_root(word):
+        for i in range(1, len(word) + 1):
+            pref = word[:i]
+            if pref in roots:
+                return pref
+        return word
+
+    return " ".join(shortest_root(w) for w in sentence.split())
+
+
+def findLongestChain(self, pairs: List[List[int]]) -> int:
+    pairs.sort(key=lambda x: x[1])
+    count = 0
+    curr_end = float("-inf")
+    for a, b in pairs:
+        if a > curr_end:
+            count += 1
+            curr_end = b
+    return count
+
+
+def findKClosestElements(self, arr: List[int], k: int, x: int) -> List[int]:
+    n = len(arr)
+    right = bisect_left(arr, x)
+    left = right - 1
+
+    for _ in range(k):
+        if left < 0:
+            right += 1
+        elif right >= n:
+            left -= 1
+        else:
+            if x - arr[1] <= arr[right] - x:
+                left -= 1
+            else:
+                right += 1
+    return arr[left + 1 : right]
+
+
+def checkPossibilityNonDecreasingArray(self, nums: List[int]) -> bool:
+    changed = False
+    for i in range(len(nums) - 1):
+        if nums[i] > nums[i + 1]:
+            if changed:
+                return False
+            changed = True
+            # decide whether to lower nums[i] or raise nums[i+1]
+            if i == 0 or nums[i - 1] <= nums[i + 1]:
+                nums[i] = nums[i + 1]
+            else:
+                nums[i + 1] = nums[i]
+    return True
+
+
+def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+    if not matrix or not matrix[0]:
+        return []
+    res = []
+    top, bottom = 0, len(matrix) - 1
+    left, right = 0, len(matrix[0]) - 1
+
+    while top <= bottom and left <= right:
+        # left → right
+        for c in range(left, right + 1):
+            res.append(matrix[top][c])
+        top += 1
+        # top ↓ bottom
+        for r in range(top, bottom + 1):
+            res.append(matrix[r][right])
+        right -= 1
+
+        if top <= bottom:
+            # right ← left
+            for c in range(right, left - 1, -1):
+                res.append(matrix[bottom][c])
+            bottom -= 1
+
+        if left <= right:
+            # bottom ↑ top
+            for r in range(bottom, top - 1, -1):
+                res.append(matrix[r][left])
+            left += 1
+    return res
+
+
 def isMatch(self, s: str, p: str) -> bool:
     i, j = 0, 0  # indices in s and p
     star, i_star = -1, -1  # last '*' position in p and matched index in s
@@ -123,6 +266,16 @@ def isMatch(self, s: str, p: str) -> bool:
             j += 1
 
         return j == len(p)
+
+
+def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+    anagrams = defaultdict(list)
+    res = []
+    for s in strs:
+        key = "".join(sorted(s))
+        anagrams[key].append(s)
+
+    return list(anagrams.values())
 
 
 # Sliding Window
@@ -298,8 +451,6 @@ def backtrack(choices):
 
 
 # Structure template for permutations/combos/constraints
-
-
 def subsets(nums):
     res, path = [], []
 
@@ -364,32 +515,6 @@ def max_subarray(nums):
 # Time: O(n), Space: O(1)
 
 
-# Topological Sort
-from collections import deque, defaultdict
-
-
-def topo_sort(n, edges):
-    g = defaultdict(list)
-    indeg = [0] * n
-    for u, v in edges:
-        g[u].append(v)
-        indeg[v] += 1
-
-    q = deque([i for i in range(n) if indeg[i] == 0])
-    order = []
-    while q:
-        u = q.popleft()
-        order.append(u)
-        for v in g[u]:
-            indeg[v] -= 1
-            if indeg[v] == 0:
-                q.append(v)
-    return order if len(order) == n else []  # empty => cycle
-
-
-# Time: O(n+m)
-
-
 # Knapsack 0/1
 def knapsack_01(weights, values, W):
     dp = [0] * (W + 1)
@@ -427,9 +552,6 @@ def coin_change_ways(coins, amount):
 
 # Time: O(amount * len(coins)), Space: O(amount)
 
-import heapq
-from collections import Counter
-
 
 def top_k_frequent(nums, k):
     freq = Counter(nums)
@@ -437,8 +559,6 @@ def top_k_frequent(nums, k):
 
 
 # Time: O(n + k log n)
-
-import heapq
 
 
 def min_rooms(intervals):
@@ -453,3 +573,26 @@ def min_rooms(intervals):
 
 
 # Time: O(n log n)
+
+
+# Topological Sort
+def topo_sort(n, edges):
+    g = defaultdict(list)
+    indeg = [0] * n
+    for u, v in edges:
+        g[u].append(v)
+        indeg[v] += 1
+
+    q = deque([i for i in range(n) if indeg[i] == 0])
+    order = []
+    while q:
+        u = q.popleft()
+        order.append(u)
+        for v in g[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0:
+                q.append(v)
+    return order if len(order) == n else []  # empty => cycle
+
+
+# Time: O(n+m)
