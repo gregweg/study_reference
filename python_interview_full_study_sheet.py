@@ -421,3 +421,79 @@ from unittest.mock import patch
 def test_checkout_sends_email(mock_send):
     checkout()
     mock_send.assert_called_once()
+
+def mostVisitedPattern(self, username: List[str], timestamp: List[int], website: List[str]) -> List[str]:
+    visited = sorted(zip(username, timestamp, website))
+
+    user_to_website = defaultdict(list)
+    for user, time, website in visited:
+        user_to_website[user].append(website)
+        
+    pattern_to_users = defaultdict(set)
+    for user, websites in user_to_website.items():
+        patterns = set(combinations(websites, 3))
+        for pattern in patterns:
+            pattern_to_users[pattern].add(user)
+        
+    max_score = 0
+    result_pattern = None
+    for pattern, users in pattern_to_users.items():
+        score = len(users)
+        if score > max_score or (score == max_score and (result_pattern is None or pattern < result_pattern)):
+            max_score = score
+            result_pattern = pattern
+    return list(result_pattern)
+
+def exist(self, board: List[List[str]], word: str) -> bool:
+    # IF len of board or 
+    rows, cols = len(board), len(board[0])
+
+    def dfs(r, c, idx):
+        if idx == len(word):
+            return True
+        if r < 0 or c < 0 or r >= rows or c >= cols:
+            return False
+        if board[r][c] != word[idx]:
+            return False
+            
+        temp = board[r][c]
+        board[r][c] = '#'
+
+        found = (dfs(r+1, c, idx+1) or
+                dfs(r-1, c, idx+1) or
+                dfs(r, c+1, idx+1) or
+                dfs(r, c-1, idx+1))
+        
+        board[r][c] = temp
+            
+        return found
+        
+    for i in range(rows):
+        for j in range(cols):
+            if dfs(i, j, 0):
+                return True
+        
+    return False
+
+def shipWithinDays(self, weights: List[int], days: int) -> int:
+        def days_needed(capacity):
+            d = 1
+            total = 0
+            for w in weights:
+                if total + w > capacity:
+                    d += 1
+                    total = 0
+                total += w
+            return d
+        
+        left, right = max(weights), sum(weights)
+        result = right
+
+        while left <= right:
+            mid = (left + right) // 2
+            if days_needed(mid) <= days:
+                result = mid
+                right = mid - 1
+            else:
+                left = mid + 1
+        return result
